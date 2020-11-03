@@ -1,3 +1,6 @@
+from Bio import Entrez, SeqIO
+
+class ResearchFromNcbi: 
     
     saveNumb = 0 
     
@@ -46,4 +49,4 @@
                 SeqIO.write(record, self.savingPath + "\'" + record.id + ".gb", 'gb')
                 print('successfully downloaded!')
         except IOError:
-            return "No connection!
+            return "No connection!"
