@@ -24,7 +24,7 @@ class BlastProcess:
         # Check the format of the format 
         if self.outformat == 5: 
             # Check if the outfile exists or not 
-            if os.stat(self.outfile).st_size != 0: 
+            if os.path.isfile(self.outfile): 
                 # parsedFileGenerator is a generator it should be converted to a real list 
                 parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-xml')
                 parsedFile = list()
@@ -48,7 +48,7 @@ class BlastProcess:
         # If the format is tabulated
         elif self.outformat == 6 or self.outformat == 7: 
             
-            if os.stat(self.outfile).st_size != 0:
+            if os.path.isfile(self.outfile):
                 # parsedFileGenerator is a generator it should be converted to a real list 
                 parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-tab', comments=True) if self.outformat == 7 else SearchIO.parse(self.outfile, 'blast-tab')
 
@@ -71,7 +71,7 @@ class BlastProcess:
 
         # If the format is text 
         else: 
-            if os.stat(self.outfile).st_size != 0:
+            if os.path.isfile(self.outfile):
                 # parsedFileGenerator is a generator it should be converted to a real list 
                 parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-text')
                 parsedFile = list()
@@ -126,10 +126,3 @@ class BlastProcess:
             self.getBestHits()
             return os.system('blastp -query best_hits.fasta -out reciprocal_blast.txt -subject ' + self.secondSequence + ' -outfmt 7')
               
-
-
-
-
-blast = BlastProcess('Yersinia_pestis_angola.fasta', 'proteìomes_yersia.fasta/protéomes_yersia.fasta', 'blast_out.txt', 0)
-
-blast.reciprocalBlast()
