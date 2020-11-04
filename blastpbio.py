@@ -1,75 +1,126 @@
-# On va lancer le blast en utilisant une commande system
+# Blast is lanched with the os module 
 import os 
 
 class BlastProcess: 
 
-    # constructeur 
+    # constructor  
     def __init__(self, firstSequence, secondSequence, outfile, outformat):
+        # Create the file it doesn't exist
+        file = open(outfile, 'w'); file.close()
         self.firstSequence = firstSequence
         self.secondSequence = secondSequence 
         self.outfile = outfile
         self.outformat = outformat
 
-    # cette méthode est utilisée pour faire le processus du blast 
+    # This method is created for the blast process 
     def blastp(self):
-        return os.system('blastp -query ' + self.firstSequence + ' -out ' + self.outfile + ' -subject ' + self.secondSequence + ' -outfmt ' + str(self.outformat))
-
-    # cette méthode est utilisée pour la récupération des meilleurs hits 
-    def getBestHits(self):
-        # importation du module qui permet de faire le parse de fichier de sortie du blast 
-        from Bio import SearchIO
+        return os.system('blastp -query ' + self.firstSequence + ' -out ' + self.outfile + ' -subject ' + self.secondSequence + ' -outfmt ' + str(self.outformat))        
         
-        # ce outfmt 5 return un fichier au format xml
+    # This method will parse blast files 
+    def parseBlastFile(self):
+        # Import SearchIO module
+        from Bio import SearchIO
+
+        # Check the format of the format 
         if self.outformat == 5: 
-            
-            # On va vérifier si le fichier est vide ou non 
-            if os.stat(self.outfile).st_size != 0:
-                bestHitsFile = open('best_hits.fasta', 'w')
-                # Si le fichier n'est pas vide, c'est pas la peine de faire un blast
-                # parsedFileGenrator est un générateur
+            # Check if the outfile exists or not 
+            if os.stat(self.outfile).st_size != 0: 
+                # parsedFileGenerator is a generator it should be converted to a real list 
                 parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-xml')
                 parsedFile = list()
 
-                # Cette boucle for va parser dans le générateur créer et faire Append dans la liste parsedFile
+                # This for loop will parse in the generator and append it in the parsedFile list
                 for i in parsedFileGenerator:
-                    # création d'une liste qui contient les résultats du blast QueryResult
+                    # We will create a list with QueryResults
                     parsedFile.append(i)
 
-                # Cette boucle for va récupérer tous les hits pour chaque query 
-                for i in range(len(parsedFile)):
-                    HspFile = parsedFile[i].hsps
-
-                    # Maintenant on va écrire les meilleurs hits qui ont un evalue 
-                    for j in range(len(HspFile)):
-                        if HspFile[j].evalue < 10 ** -50: 
-                            bestHitsFile.write(">{}\n".format(HspFile[j].hit_description))
-                            bestHitsFile.write("{}\n".format(HspFile[j].hit.seq))
-
-                bestHitsFile.close()
-            else:
-                # Par contre si le fichier out file est vide il faut faire le blast  
+            # In case the outfile is empty we will proceed the blastprocess
+            else: 
                 self.blastp()
-                bestHitsFile = open('best_hits.fasta', 'w')
                 parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-xml')
                 parsedFile = list()
 
-                # Cette boucle for va parser dans le générateur créer et faire Append dans la liste parsedFile
+                # This for loop will parse in the generator and append it in the parsedFile list
                 for i in parsedFileGenerator:
-                    # création d'une liste qui contient les résultats du blast QueryResult
+                    # We will create a list with QueryResults
+                    parsedFile.append(i)
+        
+        # If the format is tabulated
+        elif self.outformat == 6 or self.outformat == 7: 
+            
+            if os.stat(self.outfile).st_size != 0:
+                # parsedFileGenerator is a generator it should be converted to a real list 
+                parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-tab', comments=True) if self.outformat == 7 else SearchIO.parse(self.outfile, 'blast-tab')
+
+                parsedFile = list()
+
+                # This for loop will parse in the generator and append it in the parsedFile list
+                for i in parsedFileGenerator:
+                    # We will create a list with QueryResults
+                    parsedFile.append(i)                
+
+            else:
+                self.blastp()
+                parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-tab', comments=True) if self.outformat == 7 else SearchIO.parse(self.outfile, 'blast-tab')
+                parsedFile = list()
+
+                # This for loop will parse in the generator and append it in the parsedFile list
+                for i in parsedFileGenerator:
+                    # We will create a list with QueryResults
                     parsedFile.append(i)
 
-                # Cette boucle for va récupérer tous les hits pour chaque query 
-                for i in range(len(parsedFile)):
-                    HspFile = parsedFile[i].hsps
+        # If the format is text 
+        else: 
+            if os.stat(self.outfile).st_size != 0:
+                # parsedFileGenerator is a generator it should be converted to a real list 
+                parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-text')
+                parsedFile = list()
 
-                    # Maintenant on va écrire les meilleurs hits qui ont un evalue 
-                    if HspFile.evalue < 10 ** -50: 
+                # This for loop will parse in the generator and append it in the parsedFile list
+                for i in parsedFileGenerator:
+                    # We will create a list with QueryResults
+                    parsedFile.append(i)                
+
+            else:
+                self.blastp()
+                parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-text')
+                parsedFile = list()
+
+                # This for loop will parse in the generator and append it in the parsedFile list
+                for i in parsedFileGenerator:
+                    # We will create a list with QueryResults
+                    parsedFile.append(i)
+        
+        return parsedFile
+    
+    # This method is used to get the best hits 
+    def getBestHits(self):
+
+        parsedFile = self.parseBlastFile()
+        # Open the fasta file which will contain the best hits 
+        bestHitsFile = open('best_hits.fasta', 'w')
+
+        for i in range(len(parsedFile)):
+            # Create a list of HSPs
+            HspFile = parsedFile[i].hsps
+
+            # Now we will write the best hits in the fasta file 
+            for j in range(len(HspFile)):
+                if HspFile[j].evalue < 10 ** -50: 
+                    if self.outformat == 5: 
+                        # if the format is xml, we will write description and sequence
                         bestHitsFile.write(">{}\n".format(HspFile[j].hit_description))
                         bestHitsFile.write("{}\n".format(HspFile[j].hit.seq))
-                
-                bestHitsFile.close()
+                    else:
+                        # otherwise we will write only the id_hit
+                        bestHitsFile.write("{}\n".format(HspFile[j].hit_id))
+        bestHitsFile.close()
+
+              
 
 
-blast = BlastProcess('Yersinia_pestis_angola.fasta', 'proteìomes_yersia.fasta/protéomes_yersia.fasta', 'blast_out.xml', 5)
+
+
+blast = BlastProcess('Yersinia_pestis_angola.fasta', 'proteìomes_yersia.fasta/protéomes_yersia.fasta', 'blast_out.txt', 0)
 
 blast.getBestHits()
