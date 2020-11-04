@@ -116,6 +116,15 @@ class BlastProcess:
                         bestHitsFile.write("{}\n".format(HspFile[j].hit_id))
         bestHitsFile.close()
 
+    # This method is used for the reciprocal blast
+    def reciprocalBlast(self):
+        # Check if the fasta file withe the best hits exists or not 
+        if os.path.isfile('best_hits.fasta'):
+            return os.system('blastp -query best_hits.fasta -out reciprocal_blast.txt -subject ' + self.secondSequence + ' -outfmt 7')
+        
+        else: 
+            self.getBestHits()
+            return os.system('blastp -query best_hits.fasta -out reciprocal_blast.txt -subject ' + self.secondSequence + ' -outfmt 7')
               
 
 
@@ -123,4 +132,4 @@ class BlastProcess:
 
 blast = BlastProcess('Yersinia_pestis_angola.fasta', 'proteìomes_yersia.fasta/protéomes_yersia.fasta', 'blast_out.txt', 0)
 
-blast.getBestHits()
+blast.reciprocalBlast()
