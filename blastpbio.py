@@ -11,6 +11,8 @@ class BlastProcess:
         self.secondSequence = secondSequence 
         self.outfile = outfile
         self.outformat = outformat
+        self.bestHitsFastaFile = 'best_hits.fasta'
+        self.reciprocalBlastFile = 'reciprocal_blast.txt'
 
     # This method is created for the blast process 
     def blastp(self):
@@ -98,7 +100,7 @@ class BlastProcess:
 
         parsedFile = self.parseBlastFile()
         # Open the fasta file which will contain the best hits 
-        bestHitsFile = open('best_hits.fasta', 'w')
+        bestHitsFile = open(self.bestHitsFastaFile, 'w')
 
         for i in range(len(parsedFile)):
             # Create a list of HSPs
@@ -114,15 +116,18 @@ class BlastProcess:
 
     # This method is used for the reciprocal blast
     def reciprocalBlast(self):
-        # Check if the fasta file withe the best hits exists or not 
-        if os.path.isfile('best_hits.fasta'):
-            return os.system('blastp -query best_hits.fasta -out reciprocal_blast.txt -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
+        # Check if the fasta file with the best hits exists or not 
+        if os.path.isfile(self.bestHitsFastaFile):
+            # launch the reciprocal blast 
+            return os.system('blastp -query best_hits.fasta -out ' + self.reciprocalBlastFile + ' -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
         
         else: 
+            # otherwise if the fasta file doesn't exist, we will creat it first
             self.getBestHits()
-            return os.system('blastp -query best_hits.fasta -out reciprocal_blast.txt -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
+            # then launch the reciprocal blast
+            return os.system('blastp -query best_hits.fasta -out ' + self.reciprocalBlastFile  + ' -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
               
 
-# blastinstance = BlastProcess('Yersinia_pestis_angola.fasta', 'proteìomes_yersia.fasta/protéomes_yersia.fasta', 'blast_out.txt', 7)
+blastinstance = BlastProcess('Yersinia_pestis_angola.fasta', 'proteìomes_yersia.fasta/protéomes_yersia.fasta', 'blast_out.txt', 7)
  
-# blastinstance.reciprocalBlast()
+blastinstance.reciprocalBlast()
