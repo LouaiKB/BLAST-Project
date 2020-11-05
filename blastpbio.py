@@ -24,7 +24,7 @@ class BlastProcess:
         # Check the format of the format 
         if self.outformat == 5: 
             # Check if the outfile exists or not 
-            if os.path.isfile(self.outfile): 
+            if os.stat(self.outfile).st_size != 0: 
                 # parsedFileGenerator is a generator it should be converted to a real list 
                 parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-xml')
                 parsedFile = list()
@@ -48,7 +48,7 @@ class BlastProcess:
         # If the format is tabulated
         elif self.outformat == 6 or self.outformat == 7: 
             
-            if os.path.isfile(self.outfile):
+            if os.stat(self.outfile).st_size != 0:
                 # parsedFileGenerator is a generator it should be converted to a real list 
                 parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-tab', comments=True) if self.outformat == 7 else SearchIO.parse(self.outfile, 'blast-tab')
 
@@ -71,7 +71,7 @@ class BlastProcess:
 
         # If the format is text 
         else: 
-            if os.path.isfile(self.outfile):
+            if os.stat(self.outfile).st_size != 0:
                 # parsedFileGenerator is a generator it should be converted to a real list 
                 parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-text')
                 parsedFile = list()
@@ -107,22 +107,22 @@ class BlastProcess:
             # Now we will write the best hits in the fasta file 
             for j in range(len(HspFile)):
                 if HspFile[j].evalue < 10 ** -50: 
-                    if self.outformat == 5: 
-                        # if the format is xml, we will write description and sequence
-                        bestHitsFile.write(">{}\n".format(HspFile[j].hit_description))
-                        bestHitsFile.write("{}\n".format(HspFile[j].hit.seq))
-                    else:
-                        # otherwise we will write only the id_hit
-                        bestHitsFile.write("{}\n".format(HspFile[j].hit_id))
+                    # Write the best hits ids in the best_hits.fasta file
+                    bestHitsFile.write("{}\n".format(HspFile[j].hit_id))
+
         bestHitsFile.close()
 
     # This method is used for the reciprocal blast
     def reciprocalBlast(self):
         # Check if the fasta file withe the best hits exists or not 
         if os.path.isfile('best_hits.fasta'):
-            return os.system('blastp -query best_hits.fasta -out reciprocal_blast.txt -subject ' + self.secondSequence + ' -outfmt 7')
+            return os.system('blastp -query best_hits.fasta -out reciprocal_blast.txt -subject ' + self.firstSequence + ' -outfmt 7')
         
         else: 
             self.getBestHits()
-            return os.system('blastp -query best_hits.fasta -out reciprocal_blast.txt -subject ' + self.secondSequence + ' -outfmt 7')
+            return os.system('blastp -query best_hits.fasta -out reciprocal_blast.txt -subject ' + self.firstSequence + ' -outfmt 7')
               
+
+blastinstance = BlastProcess('Yersinia_pestis_angola.fasta', 'proteìomes_yersia.fasta/protéomes_yersia.fasta', 'blast_out.xml', 5)
+ 
+blastinstance.reciprocalBlast()
