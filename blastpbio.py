@@ -3,20 +3,28 @@ import os
 
 class BlastProcess: 
 
-    # constructor  
-    def __init__(self, firstSequence, secondSequence, outfile, outformat):
-        # Create the file it doesn't exist
-        file = open(outfile, 'w'); file.close()
-        self.firstSequence = firstSequence
-        self.secondSequence = secondSequence 
-        self.outfile = outfile
-        self.outformat = outformat
-        self.bestHitsFastaFile = 'best_hits.fasta'
-        self.reciprocalBlastFile = 'reciprocal_blast.txt'
+    # This counter is incremented when an instance is created 
+    # basically we will include this counter in the naming of files in order to avoid overwritings
+    counter = 0
 
+    # constructor  
+    def __init__(self, firstSequence, secondSequence, outformat):
+
+        BlastProcess.counter += 1
+        self.firstSequence = firstSequence
+        self.secondSequence = secondSequence
+        self.outformat = outformat 
+        self.outfile = 'blast_' + str(BlastProcess.counter) + '_out_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] + '.txt'
+        self.bestHitsFastaFile = 'best_hits_'+ str(BlastProcess.counter) + '_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] +'.fasta'
+        self.reciprocalBlastFile = 'reciprocal_blast_'+ str(BlastProcess.counter) + '_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] + '.txt'
+        # besthitsfastafile and reciprocalblastfile are written in this way to avoid overwriting
+
+        # Create the file it doesn't exist
+        file = open(self.outfile, 'w'); file.close()
+    
     # This method is created for the blast process 
     def blastp(self):
-        return os.system('blastp -query ' + self.firstSequence + ' -out ' + self.outfile + ' -subject ' + self.secondSequence + ' -outfmt ' + str(self.outformat))        
+        return os.system('blastp -query ' + self.firstSequence + ' -out ' + self.outfile + ' -subject ' + self.secondSequence + ' -outfmt ' + str(self.outformat) + ' -num_threads 2')        
         
     # This method will parse blast files 
     def parseBlastFile(self):
@@ -108,7 +116,7 @@ class BlastProcess:
 
             # Now we will write the best hits in the fasta file 
             for j in range(len(HspFile)):
-                if HspFile[j].evalue < 10 ** -50: 
+                if HspFile[j].evalue < 10 ** -100: 
                     # Write the best hits ids in the best_hits.fasta file
                     bestHitsFile.write("{}\n".format(HspFile[j].hit_id))
 
@@ -119,15 +127,15 @@ class BlastProcess:
         # Check if the fasta file with the best hits exists or not 
         if os.path.isfile(self.bestHitsFastaFile):
             # launch the reciprocal blast 
-            return os.system('blastp -query best_hits.fasta -out ' + self.reciprocalBlastFile + ' -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
+            return os.system('blastp -query ' + self.bestHitsFastaFile + ' -out ' + self.reciprocalBlastFile + ' -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
         
         else: 
             # otherwise if the fasta file doesn't exist, we will creat it first
             self.getBestHits()
             # then launch the reciprocal blast
-            return os.system('blastp -query best_hits.fasta -out ' + self.reciprocalBlastFile  + ' -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
+            return os.system('blastp -query ' + self.bestHitsFastaFile + ' -out ' + self.reciprocalBlastFile  + ' -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
               
 
-blastinstance = BlastProcess('Yersinia_pestis_angola.fasta', 'proteìomes_yersia.fasta/protéomes_yersia.fasta', 'blast_out.txt', 7)
+blastinstance = BlastProcess('Yersinia_pestis_angola.fasta', 'protéomes_yersia.fasta', 7)
  
-blastinstance.reciprocalBlast()
+blastinstance.blastp()
