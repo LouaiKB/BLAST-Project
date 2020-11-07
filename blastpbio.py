@@ -35,25 +35,14 @@ class BlastProcess:
         if self.outformat == 5: 
             # Check if the outfile exists or not 
             if os.stat(self.outfile).st_size != 0: 
-                # parsedFileGenerator is a generator it should be converted to a real list 
-                parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-xml')
-                parsedFile = list()
-
                 # This for loop will parse in the generator and append it in the parsedFile list
-                for i in parsedFileGenerator:
-                    # We will create a list with QueryResults
-                    parsedFile.append(i)
+                parsedFile = [i for i in SearchIO.parse(self.outfile, 'blast-xml')]
 
             # In case the outfile is empty we will proceed the blastprocess
             else: 
                 self.blastp()
-                parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-xml')
-                parsedFile = list()
-
                 # This for loop will parse in the generator and append it in the parsedFile list
-                for i in parsedFileGenerator:
-                    # We will create a list with QueryResults
-                    parsedFile.append(i)
+                parsedFile = [i for i in SearchIO.parse(self.outfile, 'blast-xml')]
         
         # If the format is tabulated
         elif self.outformat == 6 or self.outformat == 7: 
@@ -61,46 +50,26 @@ class BlastProcess:
             if os.stat(self.outfile).st_size != 0:
                 # parsedFileGenerator is a generator it should be converted to a real list 
                 parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-tab', comments=True) if self.outformat == 7 else SearchIO.parse(self.outfile, 'blast-tab')
-
-                parsedFile = list()
-
                 # This for loop will parse in the generator and append it in the parsedFile list
-                for i in parsedFileGenerator:
-                    # We will create a list with QueryResults
-                    parsedFile.append(i)                
+                parsedFile = [i for i in parsedFileGenerator]
 
             else:
                 self.blastp()
                 parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-tab', comments=True) if self.outformat == 7 else SearchIO.parse(self.outfile, 'blast-tab')
-                parsedFile = list()
-
                 # This for loop will parse in the generator and append it in the parsedFile list
-                for i in parsedFileGenerator:
-                    # We will create a list with QueryResults
-                    parsedFile.append(i)
+                parsedFile = [i for i in parsedFileGenerator]
 
         # If the format is text 
         else: 
             if os.stat(self.outfile).st_size != 0:
-                # parsedFileGenerator is a generator it should be converted to a real list 
-                parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-text')
-                parsedFile = list()
-
                 # This for loop will parse in the generator and append it in the parsedFile list
-                for i in parsedFileGenerator:
-                    # We will create a list with QueryResults
-                    parsedFile.append(i)                
+                parsedFile = [i for i in SearchIO.parse(self.outfile, 'blast-text')]
 
             else:
                 self.blastp()
-                parsedFileGenerator = SearchIO.parse(self.outfile, 'blast-text')
-                parsedFile = list()
-
                 # This for loop will parse in the generator and append it in the parsedFile list
-                for i in parsedFileGenerator:
-                    # We will create a list with QueryResults
-                    parsedFile.append(i)
-        
+                parsedFile = [i for i in SearchIO.parse(self.outfile, 'blast-text')]
+
         return parsedFile
     
     # This method is used to get the best hits 
