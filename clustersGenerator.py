@@ -85,3 +85,5 @@ def clusterGenerator(hits_id, querys_id):
         all_querys.remove(all_querys[0])
     
     return cluster
+
+print(clusterGenerator(all_results_hits, all_results_querys))

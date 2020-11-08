@@ -14,9 +14,9 @@ class BlastProcess:
         self.firstSequence = firstSequence
         self.secondSequence = secondSequence
         self.outformat = outformat 
-        self.outfile = 'blast_' + str(BlastProcess.counter) + '_out_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] + '.txt'
-        self.bestHitsFastaFile = 'best_hits_'+ str(BlastProcess.counter) + '_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] +'.fasta'
-        self.reciprocalBlastFile = 'reciprocal_blast_'+ str(BlastProcess.counter) + '_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] + '.txt'
+        self.outfile = 'blastp_out_files/blast_' + str(BlastProcess.counter) + '_out_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] + '.txt'
+        self.bestHitsFastaFile = 'best_hits/best_hits_'+ str(BlastProcess.counter) + '_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] +'.fasta'
+        self.reciprocalBlastFile = 'reciprocal_files/reciprocal_blast_'+ str(BlastProcess.counter) + '_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] + '.txt'
         # besthitsfastafile and reciprocalblastfile are written in this way to avoid overwriting
 
         # Create the file it doesn't exist
@@ -24,7 +24,7 @@ class BlastProcess:
     
     # This method is created for the blast process 
     def blastp(self):
-        return os.system('blastp -query ' + self.firstSequence + ' -out ' + self.outfile + ' -subject ' + self.secondSequence + ' -outfmt ' + str(self.outformat) + ' -num_threads 2')        
+        return os.system('blastp -query ' + self.firstSequence + ' -out ' + self.outfile + ' -subject ' + self.secondSequence + ' -outfmt ' + str(self.outformat))        
         
     # This method will parse blast files 
     def parseBlastFile(self):
@@ -104,6 +104,3 @@ class BlastProcess:
             # then launch the reciprocal blast
             return os.system('blastp -query ' + self.bestHitsFastaFile + ' -out ' + self.reciprocalBlastFile  + ' -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
               
-# blastinstance = BlastProcess('Yersinia_pestis_angola.fasta', 'protéomes_yersia.fasta', 7)
- 
-# blastinstance.blastp()
