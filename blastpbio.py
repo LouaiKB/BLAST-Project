@@ -104,7 +104,6 @@ class BlastProcess:
             # then launch the reciprocal blast
             return os.system('blastp -query ' + self.bestHitsFastaFile + ' -out ' + self.reciprocalBlastFile  + ' -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
               
-
 # blastinstance = BlastProcess('Yersinia_pestis_angola.fasta', 'protéomes_yersia.fasta', 7)
  
 # blastinstance.blastp()
