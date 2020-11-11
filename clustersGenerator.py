@@ -26,8 +26,7 @@ for i in range(len(proteomeCombinations)):
     reciprocalFiles.append(blastinstance.reciprocalBlastFile)
 
 # Creation of variables 
-all_results = {}
-hits_cluster = list()
+all_results = dict()
 
 # This for loop will retrieve ids of hits and querys from RBH files
 for i in reciprocalFiles:
