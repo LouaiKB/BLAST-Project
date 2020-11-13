@@ -18,7 +18,7 @@ class BlastProcess:
         self.outfile_reverse_blast = 'blastp_reverse_out_file/blast_reverse_' + str(BlastProcess.counter) + '_' + self.secondSequence[0:self.secondSequence.index('.')] + '_vs_' + self.firstSequence[0:self.firstSequence.index('.')] + '.txt'
         self.reciprocalBestHitsCsvFile = 'reciprocal_best_hits/best_hits_'+ str(BlastProcess.counter) + '_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] +'.csv'
         self.reciprocalBlastFile = 'reciprocal_files/reciprocal_blast_'+ str(BlastProcess.counter) + '_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] + '.txt'
-        # besthitsfastafile and reciprocalblastfile are written in this way to avoid overwriting
+        # reciprocalBestHitsCsvFile and reciprocalBlastFile are written in this way to avoid overwriting
 
         # Create the file it doesn't exist
         file = open(self.outfile, 'w'); file.close()

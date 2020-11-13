@@ -2,6 +2,7 @@
 from BlastpProcess import BlastProcess
 from itertools import combinations 
 from Bio import SearchIO
+import pandas as pd 
 
 # store the files into variables
 yersiniaProteom = 'Yersinia_pestis_angola.fasta'
@@ -18,25 +19,27 @@ combinatioObject = combinations(proteomeLists, 2)
 proteomeCombinations = [i for i in combinatioObject]
 
 # this list will store the files which have the results of reciprocal blast
-reciprocalFiles = list()
+reciprocalBestHitsFiles = list()
 
 for i in range(len(proteomeCombinations)):
     blastinstance = BlastProcess(proteomeCombinations[i][0], proteomeCombinations[i][1], 7)
-    blastinstance.blastWithBestHits()
-    reciprocalFiles.append(blastinstance.reciprocalBlastFile)
+    blastinstance.getBestHits()
+    reciprocalBestHitsFiles.append(blastinstance.reciprocalBestHitsCsvFile)
 
 # Creation of variables 
 all_results = dict()
 
 # This for loop will retrieve ids of hits and querys from RBH files
-for i in reciprocalFiles:
-    queryResults = [i for i in SearchIO.parse(i, 'blast-tab', comments=True)]
+for csv_file in reciprocalBestHitsFiles:
+
+    # create a dateframe of the csv_files
+    df = pd.read_csv(csv_file)
    
     # get the results (hit id, query id) from reciprocal files
-    results = [(i[0].id, i[0].query_id) for i in (i.hits for i in queryResults)]
+    results = [i for i in df[['Hit_ID', 'Query_ID']].apply(tuple, axis=1)]
    
     # store the ids of hits and querys in a dictionnary
-    all_results['results_'+ str(reciprocalFiles.index(i))] = results
+    all_results['results_'+ str(reciprocalBestHitsFiles.index(csv_file))] = results
 
 # this function will return an Array with ids (cluster)
 def clusterGenerator(all_results):
@@ -238,13 +241,14 @@ def clusterGenerator(all_results):
         values.remove(values[0])
         
         # now write the cluster in files
-        clusterFile = open('cluster_all.txt', 'w')
-        
-        # write in the file
-        for i in cluster.values():
-            clusterFile.write("{}\n".format(i))
+    clusterFile = open('cluster_all.txt', 'w')
 
-        # close the file
-        clusterFile.close()
+    # write in the file, we add list(set()) to avoid redondance
+    for i in list(set(cluster.values())):
+        clusterFile.write("{}\n".format(i))
+
+    # close the file
+    clusterFile.close()
 
 clusterGenerator(all_results)
+
