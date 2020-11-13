@@ -1,5 +1,5 @@
 # import the BlastProcess Class 
-from blastpbio import BlastProcess
+from BlastpProcess import BlastProcess
 from itertools import combinations 
 from Bio import SearchIO
 
@@ -22,7 +22,7 @@ reciprocalFiles = list()
 
 for i in range(len(proteomeCombinations)):
     blastinstance = BlastProcess(proteomeCombinations[i][0], proteomeCombinations[i][1], 7)
-    blastinstance.reciprocalBlast()
+    blastinstance.blastWithBestHits()
     reciprocalFiles.append(blastinstance.reciprocalBlastFile)
 
 # Creation of variables 
