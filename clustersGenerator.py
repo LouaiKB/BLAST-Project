@@ -5,29 +5,28 @@ from Bio import SearchIO
 import pandas as pd 
 import csv
 
-# # store the files into variables
-# yersiniaProteom = 'Yersinia_pestis_angola.fasta'
-# yersiaProteom = 'protéomes_yersia.fasta'
-# yersinaPestisBiovar = 'Yersinia_pestis_biovar_microtus_str_91001.ASM788v1.pep.all.fa'
+# store the files into variables
+yersiniaProteom = 'Yersinia_pestis_angola.fasta'
+yersiaProteom = 'protéomes_yersia.fasta'
+yersinaPestisBiovar = 'Yersinia_pestis_biovar_microtus_str_91001.ASM788v1.pep.all.fa'
 
-# # lists of proteomes
-# proteomeLists = [yersiniaProteom, yersiaProteom, yersinaPestisBiovar]
+# lists of proteomes
+proteomeLists = [yersiniaProteom, yersiaProteom, yersinaPestisBiovar]
 
-# # creation of combinations object 
-# combinatioObject = combinations(proteomeLists, 2)
+# creation of combinations object 
+combinatioObject = combinations(proteomeLists, 2)
 
-# # creation of proteom combinations 
-# proteomeCombinations = [i for i in combinatioObject]
+# creation of proteom combinations 
+proteomeCombinations = [i for i in combinatioObject]
 
-# # this list will store the files which have the results of reciprocal blast
-# reciprocalBestHitsFiles = list()
+# this list will store the files which have the results of reciprocal blast
+reciprocalBestHitsFiles = list()
 
-# for i in range(len(proteomeCombinations)):
-#     blastinstance = BlastProcess(proteomeCombinations[i][0], proteomeCombinations[i][1], 7)
-#     blastinstance.getBestHits()
-#     reciprocalBestHitsFiles.append(blastinstance.reciprocalBestHitsCsvFile)
+for i in range(len(proteomeCombinations)):
+    blastinstance = BlastProcess(proteomeCombinations[i][0], proteomeCombinations[i][1], 7)
+    blastinstance.getBestHits()
+    reciprocalBestHitsFiles.append(blastinstance.reciprocalBestHitsCsvFile)
 
-reciprocalBestHitsFiles = ['reciprocal_best_hits/best_hits_2_Yersinia_pestis_angola_vs_protéomes_yersia.csv', 'reciprocal_best_hits/best_hits_3_Yersinia_pestis_angola_vs_Yersinia_pestis_biovar_microtus_str_91001.csv', 'reciprocal_best_hits/best_hits_4_protéomes_yersia_vs_Yersinia_pestis_biovar_microtus_str_91001.csv']
 # Creation of variables 
 all_results = dict()
 
@@ -254,6 +253,4 @@ def clusterGenerator(all_results):
 
     # close the file
     clusterFile.close()
-
-clusterGenerator(all_results)
 
