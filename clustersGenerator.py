@@ -258,7 +258,7 @@ class ClustersGenerator:
             values.remove(values[0])
             
         # now write the cluster in a csv file
-        clusterFile = open(self.clusterFileCsv, 'w')
+        clusterFile = open(self.clusterFileCsv, 'w', newline='')
 
         # initialise the writer of the csv 
         theWriter = csv.writer(clusterFile)
