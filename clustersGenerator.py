@@ -272,12 +272,12 @@ class ClustersGenerator:
 
 
 # store the files into variables
-yersiniaProteom = 'Yersinia_pestis_angola.fasta'
-yersiaProteom = 'protéomes_yersia.fasta'
-yersinaPestisBiovar = 'Yersinia_pestis_biovar_microtus_str_91001.ASM788v1.pep.all.fa'
+fervidicoccus = 'Fervidicoccus.fasta'
+ingnicoccus = 'Ignicoccus.fasta'
+aciduliprofundum = 'Aciduliprofundum.fasta'
 
 # lists of proteomes
-proteomeLists = [yersiniaProteom, yersiaProteom, yersinaPestisBiovar]
+proteomeLists = [fervidicoccus, ingnicoccus, aciduliprofundum]
 
 obj = ClustersGenerator(proteomeLists)
 

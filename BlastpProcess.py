@@ -168,8 +168,3 @@ class BlastProcess:
             # then launch the reciprocal blast
             return os.system('blastp -query ' + self.reciprocalBestHitsCsvFile + ' -out ' + self.reciprocalBlastFile  + ' -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
               
-yersiniaProteom = 'Yersinia_pestis_angola.fasta'
-yersiaProteom = 'protéomes_yersia.fasta'
-
-blast = BlastProcess(yersiniaProteom, yersiaProteom, 7)
-blast.getBestHits()

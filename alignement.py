@@ -1,11 +1,11 @@
-from Bio import SeqIO
+from Bio import SeqIO, Entrez, Phylo
 import pandas as pd 
 import csv
-
+import os
 # store the files into variables
-yersiniaProteom = 'Yersinia_pestis_angola.fasta'
-yersiaProteom = 'protéomes_yersia.fasta'
-yersinaPestisBiovar = 'Yersinia_pestis_biovar_microtus_str_91001.ASM788v1.pep.all.fa'
+yersiniaProteom = 'Fervidicoccus.fasta'
+yersiaProteom = 'Aciduliprofundum.fasta'
+yersinaPestisBiovar = 'Ignicoccus.fasta'
 
 # creation of a proteom list
 proteomList = [yersiniaProteom, yersiaProteom, yersinaPestisBiovar]
@@ -17,7 +17,7 @@ for protein in proteomList:
     # the ids of each protein is stored in this dictionnary
     ids_dict['ids_of_' + protein[0:protein.index('.')]] = [i.id for i in (i for i in SeqIO.parse(protein, 'fasta'))]
 
-
+# this function is used for sorting cluster
 def sortClusters():
     # ids_dict is a global variable
     global ids_dict
@@ -46,7 +46,42 @@ def sortClusters():
     # we write each cluster list in the csv file
     for row in clusters:
         theWriter.writerow(row)
-    
+    # close the sortedFile
     sortedFile.close()
 
-sortClusters()
+# this function is used for retrieve sequence of each id in cluster from NCBI
+def getSequenceOfEachIdFromCluster(proteomLists):
+    all_proteins = []
+    for protein in proteomLists:
+        record = [i for i in SeqIO.parse(protein, 'fasta')]
+        for i in record:
+            all_proteins.append((i.id, i.description, i.seq))
+    
+    return all_proteins
+
+def alignementProcess():
+    global proteomList
+    all_prot = getSequenceOfEachIdFromCluster(proteomList)
+    clusters = pd.read_csv('cluster_all_sorted.csv').values.tolist()
+    for cluster in clusters:
+        fastafile = open('infile.fasta', 'w')
+        for item in cluster:
+            for seqiorecord in all_prot:
+                if item in seqiorecord:
+                    fastafile.write('>{}\n'.format(seqiorecord[0] + ' ' + seqiorecord[1]))
+                    fastafile.write('{}\n'.format(seqiorecord[2]))
+        fastafile.close()
+        
+        os.system('muscle -in infile.fasta -out out/outfile' + str(clusters.index(cluster)) +'.dnd -clwstrict')
+
+def createSuperAlignements():
+    import shutil, glob
+
+    with open('super_alignments.dnd', 'wb') as outfile:
+        for filename in glob.glob('out/*.dnd'):
+            if filename == outfile:
+                continue 
+            with open(filename, 'rb') as readfile:
+                shutil.copyfileobj(readfile, outfile)
+
+createSuperAlignements()
