@@ -49,39 +49,55 @@ def sortClusters():
     # close the sortedFile
     sortedFile.close()
 
-# this function is used for retrieve sequence of each id in cluster from NCBI
-def getSequenceOfEachIdFromCluster(proteomLists):
+def alignementProcessOfClusters():
+    global proteomList
     all_proteins = []
-    for protein in proteomLists:
+    for protein in proteomList:
         record = [i for i in SeqIO.parse(protein, 'fasta')]
         for i in record:
             all_proteins.append((i.id, i.description, i.seq))
     
-    return all_proteins
-
-def alignementProcess():
-    global proteomList
-    all_prot = getSequenceOfEachIdFromCluster(proteomList)
     clusters = pd.read_csv('cluster_all_sorted.csv').values.tolist()
     for cluster in clusters:
         fastafile = open('infile.fasta', 'w')
         for item in cluster:
-            for seqiorecord in all_prot:
+            for seqiorecord in all_proteins:
                 if item in seqiorecord:
                     fastafile.write('>{}\n'.format(seqiorecord[0] + ' ' + seqiorecord[1]))
                     fastafile.write('{}\n'.format(seqiorecord[2]))
         fastafile.close()
         
-        os.system('muscle -in infile.fasta -out out/outfile' + str(clusters.index(cluster)) +'.dnd -clwstrict')
+        os.system('muscle -in infile.fasta -out out/outfile' + str(clusters.index(cluster)) +'.afa')
 
-def createSuperAlignements():
-    import shutil, glob
+def createSuperAlignementsFile():
+    from glob import glob
+    from collections import defaultdict
 
-    with open('super_alignments.dnd', 'wb') as outfile:
-        for filename in glob.glob('out/*.dnd'):
-            if filename == outfile:
-                continue 
-            with open(filename, 'rb') as readfile:
-                shutil.copyfileobj(readfile, outfile)
+    global proteomList
+    all_proteins_ids = {}
+    for protein in proteomList: 
+        record = [i for i in SeqIO.parse(protein, 'fasta')]
+        all_proteins_ids[protein[0:protein.index('.')]] = []
+        for i in record:
+            all_proteins_ids[protein[0:protein.index('.')]].append(i.id)
+    
+    newProteinSeqs = defaultdict(list)
+    
+    for afaFile in glob('out/*.afa'):
+        idAndSequence = [(i.id, i.seq) for i in SeqIO.parse(afaFile, 'fasta')]
+        for key in all_proteins_ids.keys():
+            for record in idAndSequence:
+                if record[0] in all_proteins_ids[key]:
+                    newProteinSeqs[key].append(record[1])
+    
+    superAlignementFile = open('superAlignFile.fasta', 'w')
 
-createSuperAlignements()
+    for key in newProteinSeqs:
+        superAlignementFile.write('>{}\n'.format(key))
+        for seq in newProteinSeqs[key]:
+            superAlignementFile.write('{}'.format(seq))
+        superAlignementFile.write('\n\n')
+    
+    superAlignementFile.close()
+
+print(createSuperAlignementsFile())
