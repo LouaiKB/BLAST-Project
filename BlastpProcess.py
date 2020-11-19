@@ -10,19 +10,28 @@ class BlastProcess:
     # constructor  
     def __init__(self, firstSequence, secondSequence, outformat):
 
+        # Create directoriers 
+        if not os.path.exists('blastp_out_files'):
+            os.mkdir('blastp_out_files')
+        if not os.path.exists('blastp_reverse_out_file'):
+            os.mkdir('blastp_reverse_out_file')
+        if not os.path.exists('reciprocal_best_hits'):
+            os.mkdir('reciprocal_best_hits')
+
+        # each time we create an object counter is incremented
         BlastProcess.counter += 1
+
         self.firstSequence = firstSequence
         self.secondSequence = secondSequence
         self.outformat = outformat 
         self.outfile = 'blastp_out_files/blast_' + str(BlastProcess.counter) + '_out_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] + '.txt'
         self.outfile_reverse_blast = 'blastp_reverse_out_file/blast_reverse_' + str(BlastProcess.counter) + '_' + self.secondSequence[0:self.secondSequence.index('.')] + '_vs_' + self.firstSequence[0:self.firstSequence.index('.')] + '.txt'
         self.reciprocalBestHitsCsvFile = 'reciprocal_best_hits/best_hits_'+ str(BlastProcess.counter) + '_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] +'.csv'
-        self.reciprocalBlastFile = 'reciprocal_files/reciprocal_blast_'+ str(BlastProcess.counter) + '_' + self.firstSequence[0:self.firstSequence.index('.')] + '_vs_' + self.secondSequence[0:self.secondSequence.index('.')] + '.txt'
-        # reciprocalBestHitsCsvFile and reciprocalBlastFile are written in this way to avoid overwriting
+        # reciprocalBestHitsCsvFile is written in this way to avoid overwriting
 
         # Create the file it doesn't exist
         file = open(self.outfile, 'w'); file.close()
-    
+
     # This method is created for the blast process 
     def blastp(self):
         return os.system('blastp -query ' + self.firstSequence + ' -out ' + self.outfile + ' -subject ' + self.secondSequence + ' -outfmt ' + str(self.outformat))        
@@ -151,20 +160,3 @@ class BlastProcess:
                             'Query_ID': itemInTheFirstBlast[1]
                         })
         rbhFile.close()
-
-    # This method is used for the blast with the best hits
-    def blastWithBestHits(self):
-        # Check if the fasta file with the best hits exists or not 
-        if os.path.isfile(self.reciprocalBestHitsCsvFile):
-            try:
-                # launch the reciprocal blast 
-                return os.system('blastp -query ' + self.reciprocalBestHitsCsvFile + ' -out ' + self.reciprocalBlastFile + ' -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
-            
-            except RuntimeError:
-                print('reciprocal blast done!')
-        else: 
-            # otherwise if the fasta file doesn't exist, we will creat it first
-            self.getBestHits()
-            # then launch the reciprocal blast
-            return os.system('blastp -query ' + self.reciprocalBestHitsCsvFile + ' -out ' + self.reciprocalBlastFile  + ' -subject ' + self.firstSequence + ' -outfmt 7 -max_target_seqs 1')
-              

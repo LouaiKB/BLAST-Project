@@ -2,16 +2,14 @@
 from BlastpProcess import BlastProcess
 from itertools import combinations 
 from Bio import SearchIO
-import pandas as pd 
-import csv
-
+import pandas as pd
 
 class ClustersGenerator:
 
     # Constructor
     def __init__(self, proteomLists):
-        self.proteomLists = proteomeLists
-        self.clusterFileCsv = 'cluster_all.csv'
+        self.proteomLists = proteomLists
+        self.clusterFiletxt = 'cluster_all.txt'
 
     # this method is used to create combinations
     def proteomeCombinations(self):
@@ -77,6 +75,43 @@ class ClustersGenerator:
             for result1 in values[0]:
                 # this for loop will iterate throw elements of the concatenated list 
                 for result2 in concatenatedListOfValues:
+                    if (result1[0] == result2[0] and result1[1] == result2[1]) or (result1[0] == result2[1] and result1[1] == result2[0]):
+                        # we will check if the result1[0] is a key in the cluster dictionnary 
+                        if result1[0] in cluster.keys():
+                            # this list contains the hits and the querys from the match 
+                            resultsFromTheMatch = [result1[0], result1[1]]
+                            # we will parse the resultsFromTheMatch and check if these ids exist or not in the values of result1[0] key
+                            for i in resultsFromTheMatch:
+                                if (i) not in cluster[result1[0]]:
+                                    # if if doesn't exist we will concatenate it in the values which are tuples
+                                    cluster[result1[0]] += (i,)
+                        else:
+                            resultsFromTheMatch = [result1[0], result1[1]]
+                            # this counter is used for checking
+                            counter = 0 
+                            # we will parse the resultsFromTheMatch 
+                            for i in range(len(resultsFromTheMatch)):
+                                # we will parse the keys in the cluster
+                                for key in cluster.keys():
+                                    # we will check if the resultsFromTheMatch exists or not in the values to avoid redondance!
+                                    if (resultsFromTheMatch[i]) in cluster[key]:
+                                        
+                                        if i == 0:
+                                            for z in (resultsFromTheMatch[1], resultsFromTheMatch[2]):
+                                                # if the this ids don't exist in the values of the dictionnary add them 
+                                                if z not in cluster[key]:
+                                                    cluster[key] += (z,); counter += 1
+
+                                        elif i == 1:
+                                            for z in (resultsFromTheMatch[0], resultsFromTheMatch[2]):
+                                                if z not in cluster[key]:
+                                                    cluster[key] += (z,); counter += 1
+                            if counter == 0: 
+                                # when the counter == 0 this means that all the resultsFromTheMatch don't exist in the dictionnary values
+                                # that's why we create a new key in the cluster dictionnary and add the values in tuples
+                                cluster[result1[0]] = (result1[0], result1[1])
+
+
                     # if there is a match between hits 
                     if result1[0] == result2[0]:
                         # we will check if the result1[0] is a key in the cluster dictionnary 
@@ -258,27 +293,13 @@ class ClustersGenerator:
             values.remove(values[0])
             
         # now write the cluster in a csv file
-        clusterFile = open(self.clusterFileCsv, 'w', newline='')
-
-        # initialise the writer of the csv 
-        theWriter = csv.writer(clusterFile)
+        clusterFile = open(self.clusterFiletxt, 'w')
 
         # write in the file, we add list(set()) to avoid redondance
         for row in list(set(cluster.values())):
-            theWriter.writerow(row)
+            clusterFile.write('\n'+','.join(row))
 
         # close the file
         clusterFile.close()
 
 
-# store the files into variables
-fervidicoccus = 'Fervidicoccus.fasta'
-ingnicoccus = 'Ignicoccus.fasta'
-aciduliprofundum = 'Aciduliprofundum.fasta'
-
-# lists of proteomes
-proteomeLists = [fervidicoccus, ingnicoccus, aciduliprofundum]
-
-obj = ClustersGenerator(proteomeLists)
-
-obj.clusterization()

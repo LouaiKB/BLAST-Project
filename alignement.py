@@ -1,6 +1,4 @@
 from Bio import SeqIO, Entrez, Phylo
-import pandas as pd 
-import csv
 import os
 # store the files into variables
 yersiniaProteom = 'Fervidicoccus.fasta'
@@ -20,34 +18,25 @@ for protein in proteomList:
 # this function is used for sorting cluster
 def sortClusters():
     # ids_dict is a global variable
-    global ids_dict
+    global ids_dict, proteomList
     # create a list of all clusters
-    clusters = pd.read_csv('cluster_all.csv', error_bad_lines=False).values.tolist()
-    
-    # this for loop is used to iterate throw the list of clusters
-    for cluster in clusters:
-        # this for loop is used to iterate throw the keys of the ids dictionnary 
-        for key in ids_dict:
-            counter = 0
-            # this for loop is used to iterate throw each list of cluster
-            for item in cluster: 
-                # check if this item exists or not in the proteom 
-                if item in ids_dict[key]:
-                    counter += 1
-            # if the counter > 1 this means that the same protein exists in two proteoms
-            if counter > 1:
-                # in this case we remove the cluster
-                clusters.remove(cluster)
+    with open('cluster_all.txt', 'r') as f:
+        lines = f.readlines()
 
-    # create a csv file which will contain the sorted clusters
-    sortedFile = open('cluster_all_sorted.csv', 'w')
-    # initialise the writer of the csv 
-    theWriter = csv.writer(sortedFile)
-    # we write each cluster list in the csv file
-    for row in clusters:
-        theWriter.writerow(row)
-    # close the sortedFile
-    sortedFile.close()
+    # this new file will have the sorted clusters
+    with open('cluster_all_sorted.txt', 'w') as file:
+        for line in lines:
+            # create list of each cluster
+            cluster = line.rstrip('\n').split(',')
+            # 
+            if len(cluster) <= len(proteomList):
+                counter = 0 
+                for key in ids_dict:
+                    for item in cluster:
+                        if item in ids_dict[key]:
+                            counter += 1
+                if counter <= len(ids_dict): 
+                    file.write(','.join(cluster)+"\n")
 
 def alignementProcessOfClusters():
     global proteomList
@@ -57,8 +46,11 @@ def alignementProcessOfClusters():
         for i in record:
             all_proteins.append((i.id, i.description, i.seq))
     
-    clusters = pd.read_csv('cluster_all_sorted.csv').values.tolist()
-    for cluster in clusters:
+    with open('cluster_all_sorted.txt', 'r') as f:
+        lines = f.readlines()
+    
+    for line in lines:
+        cluster = line.rstrip('\n').split(',')
         fastafile = open('infile.fasta', 'w')
         for item in cluster:
             for seqiorecord in all_proteins:
@@ -67,7 +59,7 @@ def alignementProcessOfClusters():
                     fastafile.write('{}\n'.format(seqiorecord[2]))
         fastafile.close()
         
-        os.system('muscle -in infile.fasta -out out/outfile' + str(clusters.index(cluster)) +'.afa')
+        os.system('muscle -in infile.fasta -out out/outfile' + str(lines.index(line)) +'.afa')
 
 def createSuperAlignementsFile():
     from glob import glob
@@ -86,11 +78,22 @@ def createSuperAlignementsFile():
     for afaFile in glob('out/*.afa'):
         idAndSequence = [(i.id, i.seq) for i in SeqIO.parse(afaFile, 'fasta')]
         for key in all_proteins_ids.keys():
-            for record in idAndSequence:
-                if record[0] in all_proteins_ids[key]:
-                    newProteinSeqs[key].append(record[1])
-    
-    superAlignementFile = open('superAlignFile.fasta', 'w')
+            if len(idAndSequence) == len(all_proteins_ids):
+                for record in idAndSequence:
+                    if record[0] in all_proteins_ids[key]:
+                        newProteinSeqs[key].append(record[1])
+            else:
+                keys = [i for i in all_proteins_ids.keys()]
+                for record in idAndSequence:
+                    if record[0] in all_proteins_ids[key]:
+                        newProteinSeqs[key].append(record[1])
+                        keys.remove(key)
+                    
+                for key in keys:
+                    newProteinSeqs[key].append('-' * len(idAndSequence[0][1]))
+
+
+    superAlignementFile = open('superAlignFile.dnd', 'w')
 
     for key in newProteinSeqs:
         superAlignementFile.write('>{}\n'.format(key))
@@ -100,4 +103,9 @@ def createSuperAlignementsFile():
     
     superAlignementFile.close()
 
-print(createSuperAlignementsFile())
+def generatePhylogeneticTree():
+    tree = Phylo.read('superAlignFile.fasta', 'fasta') 
+    Phylo.draw(tree)   
+
+
+generatePhylogeneticTree()
