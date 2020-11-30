@@ -3,11 +3,15 @@
 AUTHOR: Elise Fabre
 
 """
+from ftplib import FTP
+from sh import gunzip
+from tkinter import * 
+import pandas as pd
+import string
+import os.path
 
 #function to search a specific oragnism name 
 def search_organism(): 
-    
-    import pandas as pd
     
     #open summary as a dataframe and sort it in order to get organism name and infraspecific_name with index summary_accesion number
     df = pd.read_table('assembly_summary_refseq.txt',header = 1,  sep = '\t')
@@ -28,9 +32,6 @@ def search_organism():
     
 #function to get proteom path from ftp server NCBI data base 
 def proteom_path() :
-    
-    import pandas as pd
-    import string 
     
     df = pd.read_table('assembly_summary_refseq.txt',header = 1,  sep = '\t')
     path_df = df[['organism_name','infraspecific_name', 'ftp_path']]
@@ -65,9 +66,6 @@ def proteom_path() :
 #function to download the chosen proteom 
 def download_proteom():
     
-    from ftplib import FTP
-    from sh import gunzip
-    
     prot_path=proteom_path()
     
     #connection to ftp server NCBI
@@ -91,8 +89,6 @@ def download_proteom():
 # this function is created in order to check wether the file is downloaded or not 
 def check_file():
     
-    import os.path
-    
     prot_path=proteom_path()
     organism_path=prot_path[0]
     
@@ -102,9 +98,6 @@ def check_file():
     else:
         label_3.configure(text="No, an error has occurreder")
 
-
-from tkinter import *
-import tkinter 
               
 #create a window to download a proteom
 window = Tk()
